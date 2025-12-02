@@ -27,12 +27,21 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ questions, onQuizComplete, cate
 
   const fetchAiAnswer = useCallback(async () => {
     setIsAiThinking(true);
-    // Simulate AI thinking time for better UX (shorter for 'easy' to simulate impulsive guess, longer for 'hard'?)
-    // Keeping random variance for natural feel.
-    const thinkingTime = Math.random() * 1500 + 500; 
-    await new Promise(res => setTimeout(res, thinkingTime));
     
-    const answer = await getAiAnswer(currentQuestion, modelId, difficulty);
+    // Performance Optimization: Run the visual timer and the API call in parallel.
+    // This prevents the user from waiting for the sum of both durations.
+    // Also reduced the waiting time significantly for a faster pace.
+    
+    const minDelay = 300;
+    const maxDelay = 800;
+    const thinkingTime = Math.random() * (maxDelay - minDelay) + minDelay; 
+    
+    const timerPromise = new Promise(res => setTimeout(res, thinkingTime));
+    const apiPromise = getAiAnswer(currentQuestion, modelId, difficulty);
+
+    // Wait for both to complete
+    const [_, answer] = await Promise.all([timerPromise, apiPromise]);
+    
     setAiAnswer(answer);
     setIsAiThinking(false);
   }, [currentQuestion, modelId, difficulty]);

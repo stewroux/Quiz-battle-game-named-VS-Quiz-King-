@@ -87,6 +87,7 @@ export const getAiAnswer = async (question: QuizQuestion, modelId: string, diffi
       contents: prompt,
       config: {
         temperature: difficulty === Difficulty.Hard ? 0 : 0.7, // Higher temp for easier/random personas
+        maxOutputTokens: 50, // Limit output tokens for speed
       },
     });
     
