@@ -1,5 +1,6 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
-import { QuizQuestion } from "../types";
+import { QuizQuestion, Difficulty } from "../types";
 import { TOTAL_QUESTIONS } from "../constants";
 import { Language } from "../i18n";
 
@@ -32,13 +33,13 @@ const quizSchema = {
   }
 };
 
-export const generateQuiz = async (category: string, language: Language): Promise<QuizQuestion[]> => {
+export const generateQuiz = async (category: string, language: Language, modelId: string): Promise<QuizQuestion[]> => {
   try {
     const languageInstruction = language === 'ja' ? 'in Japanese' : 'in English';
     const prompt = `Generate ${TOTAL_QUESTIONS} unique, interesting, and challenging multiple-choice trivia questions about ${category}. Generate the quiz entirely ${languageInstruction}. Each question must have exactly 4 options. Ensure one of the options is the correct answer.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: modelId,
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -63,26 +64,35 @@ export const generateQuiz = async (category: string, language: Language): Promis
   }
 };
 
-export const getAiAnswer = async (question: QuizQuestion): Promise<string> => {
+export const getAiAnswer = async (question: QuizQuestion, modelId: string, difficulty: Difficulty): Promise<string> => {
   try {
-    const prompt = `You are the Quiz King, an unbeatable trivia master. Answer the following question.
+    let persona = "You are a casual trivia player. You have general knowledge but might miss obscure facts.";
+    
+    if (difficulty === Difficulty.Easy) {
+      persona = "You are a beginner trivia player. You are unsure of yourself and frequently make mistakes or choose incorrect answers.";
+    } else if (difficulty === Difficulty.Hard) {
+      persona = "You are the Quiz King, an unbeatable trivia master. You have encyclopedic knowledge and rarely make mistakes.";
+    }
+
+    const prompt = `You are participating in a trivia quiz.
+    ${persona}
+    
     Question: "${question.question}"
     Options: ${question.options.join(", ")}
     
-    Respond ONLY with the text of the correct answer from the options provided.`;
+    Based strictly on your persona, choose one of the options. Respond ONLY with the exact text of the chosen option.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: modelId,
       contents: prompt,
       config: {
-        temperature: 0, // Be deterministic for the "king"
+        temperature: difficulty === Difficulty.Hard ? 0 : 0.7, // Higher temp for easier/random personas
       },
     });
     
     let aiChoice = response.text.trim();
 
     // Fallback: If the AI doesn't return a valid option, it makes a random guess.
-    // This can happen with very creative models.
     if (!question.options.includes(aiChoice)) {
         console.warn(`AI returned an invalid answer: "${aiChoice}". Picking a random option.`);
         aiChoice = question.options[Math.floor(Math.random() * question.options.length)];

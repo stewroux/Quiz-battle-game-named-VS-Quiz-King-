@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { QuizQuestion } from '../types';
+import { QuizQuestion, Difficulty } from '../types';
 import { getAiAnswer } from '../services/geminiService';
 import QuizKingAvatar from './QuizKingAvatar';
 import { useLanguage } from '../i18n';
@@ -8,9 +9,11 @@ interface QuizScreenProps {
   questions: QuizQuestion[];
   onQuizComplete: (userScore: number, aiScore: number) => void;
   category: string;
+  modelId: string;
+  difficulty: Difficulty;
 }
 
-const QuizScreen: React.FC<QuizScreenProps> = ({ questions, onQuizComplete, category }) => {
+const QuizScreen: React.FC<QuizScreenProps> = ({ questions, onQuizComplete, category, modelId, difficulty }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userScore, setUserScore] = useState(0);
   const [aiScore, setAiScore] = useState(0);
@@ -24,13 +27,15 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ questions, onQuizComplete, cate
 
   const fetchAiAnswer = useCallback(async () => {
     setIsAiThinking(true);
-    // Simulate AI thinking time for better UX
-    const thinkingTime = Math.random() * 1500 + 500; // 0.5s to 2s
+    // Simulate AI thinking time for better UX (shorter for 'easy' to simulate impulsive guess, longer for 'hard'?)
+    // Keeping random variance for natural feel.
+    const thinkingTime = Math.random() * 1500 + 500; 
     await new Promise(res => setTimeout(res, thinkingTime));
-    const answer = await getAiAnswer(currentQuestion);
+    
+    const answer = await getAiAnswer(currentQuestion, modelId, difficulty);
     setAiAnswer(answer);
     setIsAiThinking(false);
-  }, [currentQuestion]);
+  }, [currentQuestion, modelId, difficulty]);
 
   useEffect(() => {
     if (currentQuestion) {

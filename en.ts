@@ -1,3 +1,4 @@
+
 export const en = {
   appName: "Quiz King",
   appDescription: "Do you have what it takes to challenge the ultimate trivia master?",
@@ -25,6 +26,13 @@ export const en = {
   playAgain: "Play Again",
   errorGeneratingQuiz: "Sorry, there was an error generating the quiz. Please try another category or refresh.",
   loadingQuestion: "Loading question...",
+  selectModel: "Select Gemini Model",
+  selectDifficulty: "Quiz King Level",
+  difficulty: {
+    easy: "Easy (Beginner)",
+    medium: "Medium (Casual)",
+    hard: "Hard (King)"
+  },
   categories: {
     generalKnowledge: "General Knowledge",
     scienceNature: "Science & Nature",

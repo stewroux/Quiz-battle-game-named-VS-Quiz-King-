@@ -1,5 +1,6 @@
+
 import React, { useState, useCallback } from 'react';
-import { GameState, QuizQuestion } from './types';
+import { GameState, QuizQuestion, Difficulty } from './types';
 import { generateQuiz } from './services/geminiService';
 import StartScreen from './components/StartScreen';
 import CategorySelection from './components/CategorySelection';
@@ -18,6 +19,11 @@ const App: React.FC = () => {
   const [currentCategory, setCurrentCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Settings State
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(Difficulty.Medium);
+
   const { language, t } = useLanguage();
 
   const handleStart = () => setGameState(GameState.CategorySelection);
@@ -30,7 +36,7 @@ const App: React.FC = () => {
     setError(null);
     setCurrentCategory(t(`categories.${category.key}`));
     try {
-      const newQuestions = await generateQuiz(category.name_en, language);
+      const newQuestions = await generateQuiz(category.name_en, language, selectedModel);
       if (newQuestions && newQuestions.length > 0) {
         setQuestions(newQuestions);
         setGameState(GameState.Quiz);
@@ -44,7 +50,7 @@ const App: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [language, t]);
+  }, [language, t, selectedModel]);
 
   const handleQuizComplete = (finalUserScore: number, finalAiScore: number) => {
     setUserScore(finalUserScore);
@@ -68,15 +74,39 @@ const App: React.FC = () => {
 
     switch (gameState) {
       case GameState.Start:
-        return <StartScreen onStart={handleStart} />;
+        return (
+          <StartScreen 
+            onStart={handleStart} 
+            selectedModel={selectedModel}
+            onModelChange={setSelectedModel}
+            selectedDifficulty={selectedDifficulty}
+            onDifficultyChange={setSelectedDifficulty}
+          />
+        );
       case GameState.CategorySelection:
         return <CategorySelection onSelectCategory={handleSelectCategory} error={error} />;
       case GameState.Quiz:
-        return <QuizScreen questions={questions} onQuizComplete={handleQuizComplete} category={currentCategory || 'Quiz'}/>;
+        return (
+          <QuizScreen 
+            questions={questions} 
+            onQuizComplete={handleQuizComplete} 
+            category={currentCategory || 'Quiz'}
+            modelId={selectedModel}
+            difficulty={selectedDifficulty}
+          />
+        );
       case GameState.End:
         return <EndScreen userScore={userScore} aiScore={aiScore} totalQuestions={questions.length} onPlayAgain={handlePlayAgain} />;
       default:
-        return <StartScreen onStart={handleStart} />;
+        return (
+          <StartScreen 
+            onStart={handleStart}
+            selectedModel={selectedModel}
+            onModelChange={setSelectedModel}
+            selectedDifficulty={selectedDifficulty}
+            onDifficultyChange={setSelectedDifficulty}
+          />
+        );
     }
   };
 

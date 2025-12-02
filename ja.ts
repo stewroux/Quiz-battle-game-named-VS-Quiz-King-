@@ -1,3 +1,4 @@
+
 export const ja = {
   appName: "クイズ王",
   appDescription: "究極のトリビアマスターに挑戦する覚悟はできていますか？",
@@ -25,6 +26,13 @@ export const ja = {
   playAgain: "もう一度プレイ",
   errorGeneratingQuiz: "申し訳ありません、クイズの生成中にエラーが発生しました。別のカテゴリを試すか、リフレッシュしてください。",
   loadingQuestion: "問題を読み込み中...",
+  selectModel: "Geminiモデルを選択",
+  selectDifficulty: "クイズ王のレベル",
+  difficulty: {
+    easy: "易しい (初心者)",
+    medium: "普通 (一般)",
+    hard: "難しい (クイズ王)"
+  },
   categories: {
     generalKnowledge: "一般知識",
     scienceNature: "科学と自然",

@@ -11,3 +11,9 @@ export enum GameState {
   Quiz = 'QUIZ',
   End = 'END',
 }
+
+export enum Difficulty {
+  Easy = 'easy',
+  Medium = 'medium',
+  Hard = 'hard'
+}
